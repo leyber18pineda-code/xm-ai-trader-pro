@@ -1,0 +1,27 @@
+name: Extract Android source
+on:
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  extract:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Extract Android project
+        run: |
+          mkdir -p android-source
+          unzip -oq XM_AI_TRADER_PRO_android_source.zip -d android-source
+          find android-source -type f -print
+      - name: Commit extracted source
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add android-source
+          if git diff --cached --quiet; then
+            echo "No source changes to commit"
+          else
+            git commit -m "Extract Android source for development"
+            git push
+          fi
