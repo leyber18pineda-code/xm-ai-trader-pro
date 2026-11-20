@@ -33,6 +33,11 @@ jobs:
           unzip -q XM_AI_TRADER_PRO_android_source.zip -d android-project
           echo "PROJECT_DIR=$(dirname "$(find "$PWD/android-project" -name settings.gradle.kts -print -quit)")" >> "$GITHUB_ENV"
 
+            - name: Corregir Java y Kotlin
+        run: |
+          FILE=$(find "$PROJECT_DIR" -name build.gradle.kts -path '*/app/*' | head -n 1)
+          sed -i 's/JavaVersion.VERSION_1_8/JavaVersion.VERSION_17/g' "$FILE"
+
       - name: Compilar APK
         run: |
           cd "$PROJECT_DIR"
