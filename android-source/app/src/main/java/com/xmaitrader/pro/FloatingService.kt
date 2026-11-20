@@ -113,7 +113,7 @@ class FloatingService : Service() {
                 subtitle.text = "Consultando cotización EUR/USD..."
                 Thread {
                     val result: String = try {
-                        val conn = URL("https://biquote.io/api/EURUSD?allowStale=false").openConnection() as HttpURLConnection
+                        val conn = URL("https://biquote.io/api/EURUSD").openConnection() as HttpURLConnection
                         conn.connectTimeout = 10000
                         conn.readTimeout = 10000
                         conn.requestMethod = "GET"
