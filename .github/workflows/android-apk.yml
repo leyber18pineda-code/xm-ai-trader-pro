@@ -17,7 +17,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Preparar Java
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: '17'
@@ -33,9 +33,9 @@ jobs:
           unzip -q XM_AI_TRADER_PRO_android_source.zip -d android-project
           echo "PROJECT_DIR=$(dirname "$(find "$PWD/android-project" -name settings.gradle.kts -print -quit)")" >> "$GITHUB_ENV"
 
-            - name: Corregir Java y Kotlin
+      - name: Corregir Java y Kotlin
         run: |
-          FILE=$(find "$PROJECT_DIR" -name build.gradle.kts -path '*/app/*' | head -n 1)
+          FILE=$(find "$PROJECT_DIR" -path '*/app/build.gradle.kts' -print -quit)
           sed -i 's/JavaVersion.VERSION_1_8/JavaVersion.VERSION_17/g' "$FILE"
 
       - name: Compilar APK
