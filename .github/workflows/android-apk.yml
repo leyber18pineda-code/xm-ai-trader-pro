@@ -38,10 +38,20 @@ jobs:
           FILE=$(find "$PROJECT_DIR" -path '*/app/build.gradle.kts' -print -quit)
           sed -i 's/JavaVersion.VERSION_1_8/JavaVersion.VERSION_17/g' "$FILE"
 
+      
       - name: Compilar APK
         run: |
           cd "$PROJECT_DIR"
-          gradle assembleDebug
+          cat > "$RUNNER_TEMP/jvm17.gradle" <<'EOF'
+          allprojects {
+              tasks.withType(org.gradle.api.tasks.compile.JavaCompile).configureEach {
+                  sourceCompatibility = '17'
+                  targetCompatibility = '17'
+              }
+          }
+          EOF
+          gradle -I "$RUNNER_TEMP/jvm17.gradle" assembleDebug
+
 
       - name: Guardar APK
         uses: actions/upload-artifact@v4
