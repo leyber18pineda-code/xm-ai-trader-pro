@@ -1,11 +1,10 @@
-
 name: Build Android APK
 
 on:
   workflow_dispatch:
   push:
     paths:
-      - 'XM_AI_TRADER_PRO_android_source.zip'
+      - 'android-source/**'
       - '.github/workflows/android-apk.yml'
 
 jobs:
@@ -27,24 +26,17 @@ jobs:
         with:
           gradle-version: '8.9'
 
-      - name: Extraer proyecto Android
+      - name: Verificar proyecto Android
         run: |
-          mkdir android-project
-          unzip -q XM_AI_TRADER_PRO_android_source.zip -d android-project
-          echo "PROJECT_DIR=$(dirname "$(find "$PWD/android-project" -name settings.gradle.kts -print -quit)")" >> "$GITHUB_ENV"
+          test -f android-source/settings.gradle.kts
+          test -f android-source/app/build.gradle.kts
+          echo "Proyecto Android encontrado"
 
-     
-      
-      - name: Corregir Java y Kotlin
+      - name: Corregir compatibilidad Java 17
         run: |
-          FILE=$(find "$PROJECT_DIR" -path '*/app/build.gradle.kts' -print -quit)
-
-          if [ -z "$FILE" ]; then
-            echo "No se encontró app/build.gradle.kts"
-            exit 1
-          fi
-
-          cat >> "$FILE" <<'EOF'
+          FILE="android-source/app/build.gradle.kts"
+          if ! grep -q "compileOptions" "$FILE"; then
+            cat >> "$FILE" <<'EOF'
 
           android {
               compileOptions {
@@ -53,14 +45,11 @@ jobs:
               }
           }
           EOF
+          fi
 
-          echo "Configuración Java 17 agregada"
-
- 
-      
       - name: Compilar APK
         run: |
-          cd "$PROJECT_DIR"
+          cd android-source
           cat > "$RUNNER_TEMP/jvm17.gradle" <<'EOF'
           allprojects {
               tasks.withType(org.gradle.api.tasks.compile.JavaCompile).configureEach {
@@ -71,9 +60,8 @@ jobs:
           EOF
           gradle -I "$RUNNER_TEMP/jvm17.gradle" assembleDebug
 
-
       - name: Guardar APK
         uses: actions/upload-artifact@v4
         with:
           name: XM-AI-TRADER-PRO-APK
-          path: '**/build/outputs/apk/debug/*.apk'
+          path: 'android-source/**/build/outputs/apk/debug/*.apk'
